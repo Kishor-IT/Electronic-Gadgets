@@ -29,8 +29,13 @@ update Customers set Email = 'sanjay078@gmail.com', Address = '456 vengai street
 select * from Customers;
 
 /*8.	Write an SQL query to recalculate and update the total cost of each order in the "Orders" table based on the prices and quantities in the "OrderDetails" table. */
+update Orders O set TotalAmount = (
+    select SUM(OD.Quantity * P.Price) from OrderDetails OD join Products P on OD.ProductID = P.ProductID where OD.OrderID = O.OrderID
+);
 
 /*9.	Write an SQL query to delete all orders and their associated order details for a specific customer from the "Orders" and "OrderDetails" tables. Allow users to input the customer ID as a parameter. */
+delete from OrderDetails where OrderID in (select OrderID from Orders where CustomerID = @CustomerID);
+delete from Orders where CustomerID = @CustomerID;
 
 /*10.	Write an SQL query to insert a new electronic gadget product into the "Products" table, including product name, category, price, and any other relevant details. */
 insert into Products(ProductName, Descriptions, Price) values ('Projector', 'A high quality projector in LG with 32 hours of continous screen presence', 27800.00);
@@ -57,3 +62,5 @@ update Orders set status='Shipped' where Orderid=8;
 select * from Orders;
 
 /*12.	Write an SQL query to calculate and update the number of orders placed by each customer in the "Customers" table based on the data in the "Orders" table. */
+update Customers C set TotalOrders = ( select COUNT(O.OrderID) from Orders O where O.CustomerID = C.CustomerID
+);
