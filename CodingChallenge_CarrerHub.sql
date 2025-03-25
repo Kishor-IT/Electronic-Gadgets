@@ -1,6 +1,6 @@
 drop database if exists CareerHub;
-CREATE DATABASE CareerHub;
-USE CareerHub;
+create database CareerHub;
+use CareerHub;
 
 create table if not exists Company(
     CompanyID int primary key auto_increment,
