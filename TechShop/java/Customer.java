@@ -1,63 +1,100 @@
-package com.techshop;
+package com.AssignmentTechshop;
 
-public class Customer {
-    private int customerID;
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String phone;
-    private String address;
-    private int totalOrders;
+import java.sql.*;
+import java.util.Scanner;
 
-    // Constructor
-    public Customer(int customerID, String firstName, String lastName, String email, String phone, String address) {
-        this.customerID = customerID;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        setEmail(email);  // Using setter for validation
-        setPhone(phone);
-        this.address = address;
-        this.totalOrders = 0;
+public class CustomerService {
+
+    private final Connection conn;
+
+    public CustomerService(Connection conn) {
+        this.conn = conn;
     }
 
-    // Getters
-    public int getCustomerID() { return customerID; }
-    public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public String getEmail() { return email; }
-    public String getPhone() { return phone; }
-    public String getAddress() { return address; }
-    public int getTotalOrders() { return totalOrders; }
+    public void addCustomer() {
+        try (Scanner sc = new Scanner(System.in)) {
+            System.out.print("Enter First Name: ");
+            String firstName = sc.nextLine();
+            System.out.print("Enter Last Name: ");
+            String lastName = sc.nextLine();
+            System.out.print("Enter Email: ");
+            String email = sc.nextLine();
+            System.out.print("Enter Phone: ");
+            String phone = sc.nextLine();
+            System.out.print("Enter Address: ");
+            String address = sc.nextLine();
 
-    // Setters with validation
-    public void setEmail(String email) {
-        if (email.contains("@")) {
-            this.email = email;
-        } else {
-            System.out.println("Invalid email format.");
+            String query = "INSERT INTO Customers (FirstName, LastName, Email, Phone, Address) VALUES (?, ?, ?, ?, ?)";
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, firstName);
+            pstmt.setString(2, lastName);
+            pstmt.setString(3, email);
+            pstmt.setString(4, phone);
+            pstmt.setString(5, address);
+
+            int rows = pstmt.executeUpdate();
+            System.out.println(rows > 0 ? "Customer added successfully." : "Failed to add customer.");
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
         }
     }
 
-    public void setPhone(String phone) {
-        if (phone.matches("\\d{10}")) {
-            this.phone = phone;
-        } else {
-            System.out.println("Invalid phone number. Must be 10 digits.");
+    public void viewCustomers() {
+        try {
+            String query = "SELECT * FROM Customers";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("CustomerID") +
+                        ", Name: " + rs.getString("FirstName") + " " + rs.getString("LastName") +
+                        ", Email: " + rs.getString("Email") + ", Phone: " + rs.getString("Phone") +
+                        ", Address: " + rs.getString("Address"));
+            }
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
         }
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void updateCustomer() {
+        try (Scanner sc = new Scanner(System.in)) {
+            System.out.print("Enter Customer ID to update: ");
+            int id = Integer.parseInt(sc.nextLine());
+            System.out.print("Enter new Email: ");
+            String email = sc.nextLine();
+            System.out.print("Enter new Phone: ");
+            String phone = sc.nextLine();
+            System.out.print("Enter new Address: ");
+            String address = sc.nextLine();
+
+            String query = "UPDATE Customers SET Email = ?, Phone = ?, Address = ? WHERE CustomerID = ?";
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, email);
+            pstmt.setString(2, phone);
+            pstmt.setString(3, address);
+            pstmt.setInt(4, id);
+
+            int rows = pstmt.executeUpdate();
+            System.out.println(rows > 0 ? "Customer updated successfully." : "Customer not found.");
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
+        }
     }
 
-    public void incrementTotalOrders() {
-        this.totalOrders++;
-    }
+    public void deleteCustomer() {
+        try (Scanner sc = new Scanner(System.in)) {
+            System.out.print("Enter Customer ID to delete: ");
+            int id = Integer.parseInt(sc.nextLine());
 
-    // Methods
-    public void getCustomerDetails() {
-        System.out.println("Customer ID: " + customerID + ", Name: " + firstName + " " + lastName);
-        System.out.println("Email: " + email + ", Phone: " + phone + ", Address: " + address);
-        System.out.println("Total Orders: " + totalOrders);
+            String query = "DELETE FROM Customers WHERE CustomerID = ?";
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setInt(1, id);
+
+            int rows = pstmt.executeUpdate();
+            System.out.println(rows > 0 ? "Customer deleted successfully." : "Customer not found.");
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
+        }
     }
 }
+
